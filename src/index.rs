@@ -66,11 +66,7 @@ fn projects() -> Markup {
 			(thing("Graphic design", "/graphic-design", false, DESIGN_IMG_SRC, html! {
 				"I like creating posters for various student events, and am generally (casually) interested in graphic design."
 			}))
-		}
-		p {
-			"Here are a few more random smaller side-projects I've worked on and that I deem to be finished."
-		}
-		.things {
+
 			(thing("BFM", "/bfm", true, BFM_IMG_SRC, html! {
 				"Big F'ing Matrix. FEM/FEA C library ("
 				code { "libbfm" }
