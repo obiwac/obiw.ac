@@ -55,7 +55,7 @@ pub fn mcpy() -> Markup {
 		html! {
 			p { "Video tutorial series on 3D graphics programming, where I write a Minecraft clone in Python." }
 			p {
-				"This page has an interactive demo (of episode 11) made in WebGL based on MCPY by "
+				"This page has an interactive demo (of episode 12) made in WebGL based on MCPY by "
 				(person(Person::Drakeerv))
 				" - it takes a little while to load (because JS is slow), but once it's loaded, you can click on it and move around like the real thing!"
 			}
@@ -75,7 +75,7 @@ pub fn mcpy() -> Markup {
 			}
 		},
 		html! {
-			iframe title="Drakeerv's port of MCPY to the browser" src="https://drakeerv.github.io/js-minecraft-clone/episodes/episode-11/index.html" loading="lazy" {}
+			iframe title="Drakeerv's port of MCPY to the browser" src="https://drakeerv.github.io/js-minecraft-clone/episodes/episode-12/index.html" loading="lazy" {}
 		},
 	)
 }
