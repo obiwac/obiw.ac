@@ -71,6 +71,16 @@ fn projects() -> Markup {
 			"Here are a few more random smaller side-projects I've worked on and that I deem to be finished."
 		}
 		.things {
+			(thing("BFM", "/bfm", true, BFM_IMG_SRC, html! {
+				"Big F'ing Matrix. FEM/FEA C library ("
+				code { "libbfm" }
+				") with Python bindings ("
+				code { "pybfm" }
+				") for use as an educational tool. "
+				(person(Person::Alex))
+				" and I made this for LEPL1110."
+			}))
+
 			(thing("MOOdle", "/moodle", true, MOODLE_IMG_SRC, html! {
 				"Advanced cow visualization tool, with a 3D pasture simulation written in WebGL. Made with "
 				(person(Person::Noa))
@@ -83,16 +93,6 @@ fn projects() -> Markup {
 				"Interactive GDPR presentation "
 				(person(Person::Noa))
 				" and I made in English class in highschool, which emulates a Windows 7 desktop."
-			}))
-
-			(thing("BFM", "/bfm", true, BFM_IMG_SRC, html! {
-				"Big F'ing Matrix. FEM/FEA C library ("
-				code { "libbfm" }
-				") with Python bindings ("
-				code { "pybfm" }
-				") for use as an educational tool. "
-				(person(Person::Alex))
-				" and I made this for LEPL1110."
 			}))
 
 			(thing("KARWa", "/karwa", false, KARWA_IMG_SRC, html! {
