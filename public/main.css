@@ -1,3 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caudex:wght@700&display=swap");
+
 /* fonts */
 
 @font-face {
@@ -96,9 +99,13 @@ body {
 
 	font-size: 20px;
 	font-display: optional;
-	font-family: "Montserrat", sans-serif, "Noto Color Emoji", sans-serif;
+	font-family: "Caudex", serif, "Noto Color Emoji", sans-serif;
 	word-break: break-word;
 	overflow-x: hidden;
+}
+
+h1, h2 {
+	font-family: "UnifrakturCook", cursive;
 }
 
 h1 {

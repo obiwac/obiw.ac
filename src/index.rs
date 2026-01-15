@@ -157,7 +157,7 @@ pub fn index() -> Markup {
 				header role="banner" {
 					.section-container {
 						center {
-							h1 { "Hey! 👋" }
+							h1 { "Obiwac" }
 						}
 						.socials {
 							(social("awibo", "https://www.linkedin.com/in/awibo", include_static!("/icons/linkedin.svg")))
