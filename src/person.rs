@@ -10,6 +10,7 @@ pub enum Person {
 	Aless,
 	Piwy,
 	Aditya,
+	Nathan,
 }
 
 pub fn person(person: Person) -> Markup {
@@ -24,6 +25,7 @@ pub fn person(person: Person) -> Markup {
 			Person::Aless => a.link href="https://github.com/akialess" { "Aless" },
 			Person::Piwy => a.link href="https://github.com/Piwy-dev" { "Piwy" },
 			Person::Aditya => a.link href="https://adityachugh.be" { "Aditya" },
+			Person::Nathan => a.link href="https://github.com/nspilette" { "Nathan" },
 		}
 	}
 }

@@ -46,6 +46,7 @@ pub const X_IMG_SRC: &str = "/public/thumbnails/x-small.png";
 pub const _24H_VELO_IMG_SRC: &str = "/public/thumbnails/24hvelo-small.png";
 pub const DESIGN_IMG_SRC: &str = "/public/thumbnails/graphic-design-small.webp";
 pub const BATMAN_IMG_SRC: &str = "/public/thumbnails/batman-small.webp";
+pub const MUSIC_QUEST_IMG_SRC: &str = "/public/thumbnails/music-quest-small.webp";
 
 fn projects() -> Markup {
 	html! {
@@ -90,6 +91,14 @@ fn projects() -> Markup {
 			"Here are a few more random smaller side-projects I've worked on and that I deem to be finished."
 		}
 		.things {
+			(thing("Music Quest", "/music-quest", false, MUSIC_QUEST_IMG_SRC, html! {
+				"Android game written in OpenGL and Kotlin for a uni course with "
+				(person(Person::Aless))
+				" and "
+				(person(Person::Nathan))
+				"."
+			}))
+
 			(thing("Compositing WM", "/x-compositing-wm", false, X_IMG_SRC, html! {
 				"Extremely basic X11 compositing window manager written in C with Xlib and OpenGL. A modified version is used in a helicopter simulator at the "
 				a.link href="https://www.dlr.de/de/das-dlr/standorte-und-bueros/braunschweig" { "DLR in Braunschweig" }

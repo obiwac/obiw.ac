@@ -4,7 +4,7 @@ use crate::base::base;
 use crate::common::{include_static, include_static_unsafe, relative};
 use crate::index::{
 	BATMAN_IMG_SRC, BFM_IMG_SRC, DESIGN_IMG_SRC, GDPR_IMG_SRC, KARWA_IMG_SRC, MCPY_IMG_SRC, MOODLE_IMG_SRC, X_IMG_SRC,
-	_24H_VELO_IMG_SRC,
+	_24H_VELO_IMG_SRC, MUSIC_QUEST_IMG_SRC,
 };
 use crate::person::{person, Person};
 use crate::social::social;
@@ -406,6 +406,33 @@ pub fn batman() -> Markup {
 	)
 }
 
+#[get("/music-quest")]
+pub fn music_quest() -> Markup {
+	explanation_page(
+		"Music Quest 📀",
+		MUSIC_QUEST_IMG_SRC,
+		html! {
+			p {
+				"Small Android game written in Kotlin with a custom OpenGL rendering engine where you play discs in a jukebox to \"colour in\" a part of the world, enabling you to explore it."
+				"If you step on an uncoloured part of the world, you die."
+			}
+			p {
+				"Written in approximately 2-3 24-hour beer-fueled hackathons."
+				"Just as God intended software to be developed."
+			}
+			p {
+				"Really shitty trailer video thrown together right before the deadline to the right."
+			}
+			.socials {
+				(social("Source code", "https://github.com/obiwac/music-quest", include_static!("/icons/gh.svg")))
+			}
+		},
+		html! {
+			iframe src="https://www.youtube.com/embed/_bskBBTQn-o" title="Music Quest presentation video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen frameborder="0" {}
+		},
+	)
+}
+
 pub fn project_page_routes() -> Vec<rocket::Route> {
 	routes![
 		mcpy,
@@ -416,6 +443,7 @@ pub fn project_page_routes() -> Vec<rocket::Route> {
 		graphic_design,
 		x_compositing_wm,
 		_24hvelo,
-		batman
+		batman,
+		music_quest
 	]
 }
