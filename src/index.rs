@@ -59,6 +59,32 @@ fn projects() -> Markup {
 				"Video tutorial series on 3D graphics programming with OpenGL, where I write a Minecraft clone in Python."
 			}))
 
+			(thing("B.A.T.M.A.N. on FreeBSD", "/batman", false, BATMAN_IMG_SRC, html! {
+				"Port of the B.A.T.M.A.N. mesh routing protocol to FreeBSD. Initially written as a GSoC project."
+			}))
+
+			(thing("Graphic design", "/graphic-design", false, DESIGN_IMG_SRC, html! {
+				"I like creating posters for various student events, and am generally (casually) interested in graphic design."
+			}))
+		}
+		p {
+			"Here are a few more random smaller side-projects I've worked on and that I deem to be finished."
+		}
+		.things {
+			(thing("MOOdle", "/moodle", true, MOODLE_IMG_SRC, html! {
+				"Advanced cow visualization tool, with a 3D pasture simulation written in WebGL. Made with "
+				(person(Person::Noa))
+				" and "
+				(person(Person::Alexis))
+				"."
+			}))
+
+			(thing("GDPR", "/gdpr", true, GDPR_IMG_SRC, html! {
+				"Interactive GDPR presentation "
+				(person(Person::Noa))
+				" and I made in English class in highschool, which emulates a Windows 7 desktop."
+			}))
+
 			(thing("BFM", "/bfm", true, BFM_IMG_SRC, html! {
 				"Big F'ing Matrix. FEM/FEA C library ("
 				code { "libbfm" }
@@ -73,24 +99,12 @@ fn projects() -> Markup {
 				"Francophone algorithmics contest. Jointly organized by Louvain-li-Nux (in Louvain-la-Neuve) and CPUMons (in Mons)."
 			}))
 
-			(thing("B.A.T.M.A.N. on FreeBSD", "/batman", false, BATMAN_IMG_SRC, html! {
-				"Port of the B.A.T.M.A.N. mesh routing protocol to FreeBSD. Initially written as a GSoC project."
-			}))
-
 			(thing("24h Vélo", "/24hvelo", false, _24H_VELO_IMG_SRC, html! {
 				"Work done for the "
 				a.link href="https://24heureslln.be" { "24h Vélo de Louvain-la-Neuve" }
 				". Made a folkloric bike as well as visualization software for a giant screen on the Grand' Place."
 			}))
 
-			(thing("Graphic design", "/graphic-design", false, DESIGN_IMG_SRC, html! {
-				"I like creating posters for various student events, and am generally (casually) interested in graphic design."
-			}))
-		}
-		p {
-			"Here are a few more random smaller side-projects I've worked on and that I deem to be finished."
-		}
-		.things {
 			(thing("Music Quest", "/music-quest", false, MUSIC_QUEST_IMG_SRC, html! {
 				"Android game written in OpenGL and Kotlin for a uni course with "
 				(person(Person::Aless))
@@ -103,20 +117,6 @@ fn projects() -> Markup {
 				"Extremely basic X11 compositing window manager written in C with Xlib and OpenGL. A modified version is used in a helicopter simulator at the "
 				a.link href="https://www.dlr.de/de/das-dlr/standorte-und-bueros/braunschweig" { "DLR in Braunschweig" }
 				"."
-			}))
-
-			(thing("MOOdle", "/moodle", true, MOODLE_IMG_SRC, html! {
-				"Advanced cow visualization tool, with a 3D pasture simulation written in WebGL. Made with "
-				(person(Person::Noa))
-				" and "
-				(person(Person::Alexis))
-				"."
-			}))
-
-			(thing("GDPR", "/gdpr", true, GDPR_IMG_SRC, html! {
-				"Interactive GDPR presentation "
-				(person(Person::Noa))
-				" and I made in English class in highschool, which emulates a Windows 7 desktop."
 			}))
 
 			(thing("LLN '24", "https://github.com/obiwac/lln-gamejam-2024", false, LLN24_IMG_SRC, html! {
