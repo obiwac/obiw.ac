@@ -3,8 +3,8 @@ use maud::{html, Markup, PreEscaped};
 use crate::base::base;
 use crate::common::{include_static, include_static_unsafe, relative};
 use crate::index::{
-	BATMAN_IMG_SRC, BFM_IMG_SRC, DESIGN_IMG_SRC, GDPR_IMG_SRC, KARWA_IMG_SRC, MCPY_IMG_SRC, MOODLE_IMG_SRC, X_IMG_SRC,
-	_24H_VELO_IMG_SRC, MUSIC_QUEST_IMG_SRC,
+	BATMAN_IMG_SRC, BFM_IMG_SRC, DESIGN_IMG_SRC, GDPR_IMG_SRC, KARWA_IMG_SRC, MCPY_IMG_SRC, MOODLE_IMG_SRC,
+	MUSIC_QUEST_IMG_SRC, X_IMG_SRC, _24H_VELO_IMG_SRC,
 };
 use crate::person::{person, Person};
 use crate::social::social;
