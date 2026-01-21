@@ -400,7 +400,6 @@ This is done in [D48735](https://reviews.freebsd.org/D48735).
 ### Idling the CPU and the `_CST` object 💭
 
 [//]: # (TODO Still gotta figure out why the checks are being made to not enter C3 when suspending)
-[//]: # (TODO Links to code for all these functions)
 
 For S0i3, it is important that all the CPUs are in their lowest C-state (CPU power state), which is usually C3.
 When entering s2idle, we're calling the machine-dependent `cpu_idle()` function to idle the CPU (as a reminder, both on the s2idle thread on the BSP and also on the APs through their idle threads).
@@ -434,9 +433,11 @@ Name (_CST Package (0x04) {
 
 As you can see, the lowest C-state in this situation is C3, and the shallowest is C1.
 
+On some platforms which might not have an easily-readable `_CST` object (e.g. is a complex method instead), you can see what C-state methods are supported with the `dev.cpu.0.cx_method` sysctl, and more C-state info in the `dev.cpu.0` tree.
+
 #### MWAIT entry method
 
-The entry method for C1 is `FFixedHW`, which means we'll go down the [`acpi_PkgFFH_IntelCpu() == 0`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n860) path.
+The entry method for C1 in the above example is `FFixedHW`, which means we'll go down the [`acpi_PkgFFH_IntelCpu() == 0`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n860) path.
 The bit offset (`0x02`) is interpreted as `class`, which in our case is `CST_FFH_INTEL_CL_MWAIT` (could also be `CST_FFH_INTEL_CL_C1IO` meaning "C1 I/O then `hlt`", but I'm going to go into that).
 
 This is telling us we need to use the x86 [MWAIT](https://www.felixcloutier.com/x86/mwait) instruction to enter the C1 state.
@@ -476,6 +477,16 @@ CPU_GET_REG(cx_next->p_lvlx, 1); // The "1" means "read one byte". This is just 
 ```
 
 Just as with our interrupt-breakable MWAIT, this will tell the CPU to enter C3 until we get an interrupt, such as an SCI.
+
+These "`p_lvlx`" resources are actually (usually?) located in the FADT as the `P_LVL2/3` registers.
+Before the `_CST` object existed, these were interacted with directly.
+See [`acpi_cpu_generic_cx_probe()`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n975).
+
+#### The `_LPI` object (again)
+
+The `_LPI` object doesn't just contain residency counter information as covered earlier.
+Actually, it is a superset of the `_CST` object and is meant to replace it ([ACPI 8.4.4](https://uefi.org/htmlspecs/ACPI_Spec_6_4_html/08_Processor_Configuration_and_Control/declaring-processors.html#lower-power-idle-states)).
+FreeBSD does not have support for this yet, but it is something I'll have to add eventually.
 
 ## Vendor-specific complications: AMD
 
