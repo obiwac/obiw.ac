@@ -397,18 +397,17 @@ There isn't much to talk about here.
 We just need to call the display off and sleep entry DSM functions on the SPMC.
 This is done in [D48735](https://reviews.freebsd.org/D48735).
 
-### Idling the CPU 💭
+### Idling the CPU and the `_CST` object 💭
 
 [//]: # (TODO Still gotta figure out why the checks are being made to not enter C3 when suspending)
 [//]: # (TODO Links to code for all these functions)
 
-When entering s2idle, we're calling the machine-dependent `cpu_idle()` function to idle the CPU (as a reminder, both on the s2idle thread on BSP and also APs through their idle threads).
 For S0i3, it is important that all the CPUs are in their lowest C-state (CPU power state), which is usually C3.
+When entering s2idle, we're calling the machine-dependent `cpu_idle()` function to idle the CPU (as a reminder, both on the s2idle thread on the BSP and also on the APs through their idle threads).
 
-`cpu_idle()` is already doing this just fine, at least on AMD systems.
-On ACPI systems, if allowed to enter a deeper power state (i.e. `busy = 0`), it will end up calling the [`acpi_cpu_idle()`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n1089) function to put the CPU into that lowest C-state.
+On ACPI systems, if allowed to enter a deeper power state (i.e. `busy == 0`), it will end up calling the [`acpi_cpu_idle()`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n1089) function to put the CPU into that lowest C-state.
 `acpi_cpu_idle()` is provided by the `acpi_cpu` driver, which gets the lowest C-state and entry method through the `_CST` object.
-That object looks something like this:
+That object on an AMD laptop looks something like this (parsed in [`acpi_cpu_cx_cst()`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n792)):
 
 ```c
 Name (_CST Package (0x04) {
@@ -435,34 +434,50 @@ Name (_CST Package (0x04) {
 
 As you can see, the lowest C-state in this situation is C3, and the shallowest is C1.
 
-The entry method for C1 **TODO**
+#### MWAIT entry method
 
-The final step the OS has to take is to idle the CPUs.
+The entry method for C1 is `FFixedHW`, which means we'll go down the [`acpi_PkgFFH_IntelCpu() == 0`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n860) path.
+The bit offset (`0x02`) is interpreted as `class`, which in our case is `CST_FFH_INTEL_CL_MWAIT` (could also be `CST_FFH_INTEL_CL_C1IO` meaning "C1 I/O then `hlt`", but I'm going to go into that).
 
-To go to sleep, we need to set them to their maximum C-state (CPU power state) and, if we did the previous setup right, the firmware will hopefully take care of the rest.
+This is telling us we need to use the x86 [MWAIT](https://www.felixcloutier.com/x86/mwait) instruction to enter the C1 state.
+MWAIT is an instruction usually used in conjunction with MONITOR to enter an "implementation-dependent optimized state" and wait until a specific memory range is written to.
 
-The [MWAIT](https://www.felixcloutier.com/x86/mwait) instruction can do this for us.
-It's an x86 instruction that's usually used in conjunction with MONITOR to enter an "implementation-dependent optimized state" and wait until a specific memory range is written to.
+If CPUID ECX bit 1 is set however, and the programmer sets ECX bit 0 to 1 before executing MWAIT, it will treat interrupts such as SCIs as break events too, so it can be used even without MONITOR.
+And if ECX bit 0 in CPUID is set too, it can also be used for power management, where bits 7 to 4 EAX can be set to contain the C-state the processor should enter (we can ignore the lowest 4 bits which are for "sub C-states").
 
-If `CPUID.05H:ECX[bit 0]` is set, it can also be used for power management.
-Specifically, `eax` can be set to contain hints to MWAIT and `ecx` (extension) can be set to contain the C-state that the processor should enter.
-
-For our purposes, we can set the lowest bit of `eax` to 1 to allow for interrupts to break out of MWAIT (i.e. wake the CPU up).
-Thanks to this, we can forgo the need to set up a memory range to monitor.
-
-Bits 7 to 4 of `ecx` are used to specify the target C-state to enter (we can ignore the lowest 4 bits which are for "sub C-states"):
+All in all, entering C1 on this machine would look like this:
 
 ```x86asm
-mov eax, 0x30 ; C-state C4 (MWAIT_C4).
-mov ecx, 1    ; Break on interrupt, like hlt (MWAIT_INTRBREAK).
+mov eax, 0x00000000 ; C1 hint (MWAIT_C1).
+mov ecx, 1          ; Break on interrupt, like hlt (MWAIT_INTRBREAK).
 mwait
 ```
 
-FreeBSD's `cpu_idle()` function will use MWAIT when it's available.
+The hint we put in EAX is given to us by the `address` returned by `acpi_PkgFFH_IntelCpu()`.
+See [`acpi_cpu_cx_cst_mwait()`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n769).
+
+On Intel platforms, its common for the MWAIT entry method to be used for deeper states too, such as C3:
+
+```x86asm
+mov eax, 0x00000020 ; C-state C3 (MWAIT_C3).
+mov ecx, 1          ; Break on interrupt, like hlt (MWAIT_INTRBREAK).
+mwait
+```
+
+#### I/O entry method
+
+Back to the `_CST` object above, we can see the entry method for C3 is `SystemIO`.
+This is telling us to read the given resource into [`cx_ptr->p_lvlx`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n928).
+We can then just enter that sleep state by reading from that resource:
+
+```c
+struct acpi_cx *cx_next = /* The struct acpi_cx corresponding to C3. */;
+CPU_GET_REG(cx_next->p_lvlx, 1); // The "1" means "read one byte". This is just a wrapper around bus_space_read_1.
+```
+
+Just as with our interrupt-breakable MWAIT, this will tell the CPU to enter C3 until we get an interrupt, such as an SCI.
 
 ## Vendor-specific complications: AMD
-
-[//]: # (TODO Specify what a GPIO interrupt being "serviced" actually means (i.e. which registers gotta be cleared etc))
 
 On AMD, there are a few extra thing we need to do for the PMFW running on the SMU to actually enter S0i3.
 As mentioned earlier, these conditions can be checked with the [amd_s2idle.py](https://git.kernel.org/pub/scm/linux/kernel/git/superm1/amd-debug-tools.git/about/) script on Linux:
