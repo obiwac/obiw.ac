@@ -83,11 +83,11 @@ pub fn mcpy() -> Markup {
 #[get("/bfm")]
 pub fn bfm() -> Markup {
 	explanation_page(
-		"Big F'ing Matrix 🌉",
+		"Big Fucking Matrix 🌉",
 		BFM_IMG_SRC,
 		html! {
 			p {
-				"BFM (aka. Big F***ing Matrix) is a FEM/FEA C library with Python bindings and 3D visualization tool. I wrote this with "
+				"BFM (aka. Big Fucking Matrix) is a FEM/FEA C library with Python bindings and 3D visualization tool. I wrote this with "
 				(person(Person::Alex))
 				" as our final project for the "
 				a.link href="https://perso.uclouvain.be/vincent.legat/zouLab/epl1110.php" { "LEPL1110" }
@@ -336,7 +336,7 @@ pub fn _24hvelo() -> Markup {
 				a.link href="https://louvainlinux.org" { "Louvain-li-Nux" }
 				") and I wrote visualization software with "
 				(person(Person::Alexis))
-				" for a giant 250K EUR screen on the Grand' Place (where the biggest of the 7 concurrent concerts take place). Once they were all done, I played "
+				" for a giant 250k EUR screen on the Grand' Place (where the biggest of the 7 concurrent concerts take place). Once they were all done, I played "
 				a.link href="https://supertuxkart.net/Main_Page" { "SuperTuxKart" }
 				" on it, which is certainly the most expensive gaming monitor I've ever played on."
 			}
@@ -373,7 +373,7 @@ pub fn batman() -> Markup {
 				") to FreeBSD."
 			}
 			p {
-				"I gave a talk about this at BSDCan 2024, which was recorded and is embedded here."
+				"I gave a talk about this at BSDCan 2024, which was recorded and is embedded here. "
 				"The slides are also embedded on this page below the video, so you can follow along if you're so inclined (they are made with "
 				a.link href="https://marp.app/" { "Marp" }
 				" which is actually awesome 💙)."
@@ -413,11 +413,11 @@ pub fn music_quest() -> Markup {
 		MUSIC_QUEST_IMG_SRC,
 		html! {
 			p {
-				"Small Android game written in Kotlin with a custom OpenGL rendering engine where you play discs in a jukebox to \"colour in\" a part of the world, enabling you to explore it."
+				"Small Android game written in Kotlin with a custom OpenGL rendering engine where you play discs in a jukebox to \"colour in\" a part of the world, enabling you to explore it. "
 				"If you step on an uncoloured part of the world, you die."
 			}
 			p {
-				"Written in approximately 2-3 24-hour beer-fueled hackathons."
+				"Written in approximately 2-3 24-hour beer-fueled hackathons. "
 				"Just as God intended software to be developed."
 			}
 			p {

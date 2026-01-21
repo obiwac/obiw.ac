@@ -51,10 +51,6 @@ pub const MUSIC_QUEST_IMG_SRC: &str = "/public/thumbnails/music-quest-small.webp
 fn projects() -> Markup {
 	html! {
 		.things {
-			(thing("aquaBSD", "https://github.com/inobulles/aquabsd/releases", false, AQUABSD_IMG_SRC, html! {
-				"OS based on FreeBSD geared towards general users. Includes a full DE, app distribution system, and network device sharing."
-			}))
-
 			(thing("MCPY", "/mcpy", true, MCPY_IMG_SRC, html! {
 				"Video tutorial series on 3D graphics programming with OpenGL, where I write a Minecraft clone in Python."
 			}))
@@ -63,18 +59,18 @@ fn projects() -> Markup {
 				"Port of the B.A.T.M.A.N. mesh routing protocol to FreeBSD. Initially written as a GSoC project."
 			}))
 
-			(thing("Graphic design", "/graphic-design", false, DESIGN_IMG_SRC, html! {
-				"I like creating posters for various student events, and am generally (casually) interested in graphic design."
-			}))
-
 			(thing("BFM", "/bfm", true, BFM_IMG_SRC, html! {
-				"Big F'ing Matrix. FEM/FEA C library ("
+				"Big Fucking Matrix. FEM/FEA C library ("
 				code { "libbfm" }
 				") with Python bindings ("
 				code { "pybfm" }
 				") for use as an educational tool. "
 				(person(Person::Alex))
 				" and I made this for LEPL1110."
+			}))
+
+			(thing("aquaBSD", "https://github.com/inobulles/aquabsd/releases", false, AQUABSD_IMG_SRC, html! {
+				"OS based on FreeBSD geared towards general users. Includes a full DE, app distribution system, and network device sharing."
 			}))
 
 			(thing("MOOdle", "/moodle", true, MOODLE_IMG_SRC, html! {
@@ -89,6 +85,10 @@ fn projects() -> Markup {
 				"Interactive GDPR presentation "
 				(person(Person::Noa))
 				" and I made in English class in highschool, which emulates a Windows 7 desktop."
+			}))
+
+			(thing("Graphic design", "/graphic-design", false, DESIGN_IMG_SRC, html! {
+				"I like creating posters for various student events, and am generally (casually) interested in graphic design."
 			}))
 
 			(thing("KARWa", "/karwa", false, KARWA_IMG_SRC, html! {
