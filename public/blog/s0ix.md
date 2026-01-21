@@ -505,13 +505,11 @@ A special thanks to Mario Limonciello ([superm1](https://github.com/superm1)) fr
 
 ## What about hibernation (S4)? 🐿
 
-[//]: # (TODO Mention Foundation work here)
-
 Hibernation actually has little to do with S0ix.
 Instead of suspending-to-RAM (i.e. keeping it active while the rest of the system is powered off), hibernation swaps all pages in RAM to disk and then completely powers off the system (much more in common with S5).
 When you want to exit out of hibernation, the bootloader reads back the image from disk to memory to restore the system to its previous state.
 
-S4 saves more power than S0ix (actually, in S4 the system consumes no power at all), but the downside is that it of course takes way longer to enter and exit.
+S4 saves more power than S0ix (actually, in S4 the system consumes pretty much no power at all), but the downside is that it of course takes way longer to enter and exit.
 To strike a balance between the two, OSs will usually start by putting the system in S0i3, then use the [RTC alarm](https://en.wikipedia.org/wiki/Real-time_clock_alarm) to wake it after a certain amount of time to initiate S4.
 That way, if the user tries to wake the system after say 10 minutes and the alarm is set to go off in 20 minutes, the system will start up quickly, but if they leave it suspended overnight the battery will only drain in S0i3 for 20 minutes.
 
@@ -527,12 +525,14 @@ This doesn't exist on modern laptops, but you can check if yours has it through 
 Theoretically, S4 wouldn't be too difficult to implement.
 At least, it has way fewer dependencies than S0i3, and a lot of the code paths already exist in FreeBSD.
 
+As of 2025, The FreeBSD Foundation has started work in earnest on [implementing S4 hibernate](https://freebsdfoundation.org/blog/freebsd-closes-the-laptop-gap-year-one-project-update/).
+
 ## What's next? 🔮
 
 Here's a grab-bag of things that still need to be done or would be nice to have:
 
-- Testing on Intel. At the moment, I don't have access to a modern Intel laptop, though I'm eyeing one of the Ultra Series 1 laptops. In the meantime, do test the patches on your Intel laptop if you have one and send me logs! [obiwac@freebsd.org](mailto:obiwac@freebsd.org) **TODO** Say En-Wei is going to be looking into this.
-- [Powertop](https://en.wikipedia.org/wiki/PowerTOP) equivalent. This would be a good [GSoC](https://summerofcode.withgoogle.com) project, so I've added it to the [SummerOfCodeIdeas](https://wiki.freebsd.org/SummerOfCodeIdeas#Power_profiling_tool) wiki page. **TODO** Say Kasyap is working on this.
+- Testing on Intel. At the moment, I don't have access to a modern Intel laptop, though I'm eyeing one of the Ultra Series 1 laptops. In the meantime, do test the patches on your Intel laptop if you have one and send me logs ([obiwac@freebsd.org](mailto:obiwac@freebsd.org))!
+- [Powertop](https://en.wikipedia.org/wiki/PowerTOP) equivalent. This would be a good [GSoC](https://summerofcode.withgoogle.com) project, so I've added it to the [SummerOfCodeIdeas](https://wiki.freebsd.org/SummerOfCodeIdeas#Power_profiling_tool) wiki page.
 - [RTC alarm](https://en.wikipedia.org/wiki/Real-time_clock_alarm) wake. This wakes the system from sleep after a given amount of time. This is used by `amd_s2idle.py` to sleep for a consistent amount of time during each test run. It can also be used to hibernate the system if it has been suspended to RAM for over e.g. 5 minutes.
 - Wake on low battery level. Through the `_BLT` ACPI control method on battery devices we can set the battery warning, low, and wake levels. Perhaps this also means we can ask firmware to emit a wake interrupt to wake the system when the battery reaches a given threshold. This would be useful to wake the device to notify the user that the battery is low, or gracefully unmount all disks and shut down the system if the battery is critically low.
 - Idleness determination. This is a concept in [IOKit on macOS](https://developer.apple.com/library/archive/documentation/DeviceDrivers/Conceptual/IOKitFundamentals/PowerMgmt/PowerMgmt.html). If a device is determined to be idle, power is removed from it. If all of a bus device's children are idle, power is removed from the bus device too.
