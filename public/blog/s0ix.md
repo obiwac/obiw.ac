@@ -1,6 +1,3 @@
-[//]: # (TODO Put all of this on a wiki page too.)
-[//]: # (TODO Shoehorn in my BSDCan S0ix graphic?)
-
 ## Background (S3 v. S0ix)
 
 One of the main things still missing in FreeBSD for it to be usable on modern laptops is the ability to go to sleep.
@@ -263,7 +260,7 @@ In ACPI-speak, a DSM (`_DSM` object) is a sort of special multiplexed method for
 When you evaluate a `_DSM` object, you pass it a vendor-specific UUID as its first argument, a revision as its second, a function index as its third, and, finally, an optional package (== a vector in ACPI-speak) of arguments as its fourth.
 On FreeBSD, `acpi_EvaluateDSMTyped` is used to do this for you.
 
-It seems like the original [Intel spec](https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf) linked above is not actually used in practice (UUID `c4eb40a0-6cd2-11e2-bcfd-0800200c9a66`), at least not on modern Intel or AMD platforms.
+AMD systems do not use the original [Intel spec](https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf) linked above (UUID `c4eb40a0-6cd2-11e2-bcfd-0800200c9a66`).
 Instead, there's [Microsoft's](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/modern-standby-firmware-notifications) DSM UUID `11e00d56-ce64-47ce-837b-1f898f9aa461` which thankfully is quite similar to the original DSM's, except with a couple extra "Modern Standby" functions and missing some others:
 
 |Index|Description|<div style="min-width: 220px">Notes</span>|
@@ -278,7 +275,7 @@ Instead, there's [Microsoft's](https://learn.microsoft.com/en-us/windows-hardwar
 |7|"Modern Standby" entry notification||
 |8|"Modern Standby" exit notification||
 
-AMD have their own DSM UUID `e3f32452-febc-43ce-9039-932122d37721` along with Microsoft's one, for which I haven't really been able to find any documentation outside of the Linux implementation.
+And AMD's own DSM UUID `e3f32452-febc-43ce-9039-932122d37721`, for which I haven't really been able to find any documentation outside of the Linux implementation.
 This is what they look like:
 
 |Index|Description|<div style="min-width: 280px">Notes</span>|
@@ -300,8 +297,8 @@ Arg3 = Package() // No arguments needed.
 call_dsm(spmc_device, Arg0, Arg1, Arg2, Arg3)
 ```
 
-On AMD platforms, we must use the AMD UUID for getting device constraints, which makes sense as Microsoft's DSMs don't have this.
-For some reason, though, the device constraints package returned by the AMD UUID follows a different format for which I couldn't find a spec anywhere 🙃
+We must use the AMD UUID for getting device constraints, which makes sense as Microsoft's DSMs don't have this.
+For some reason, though, the device constraints package returned by the AMD UUID follows a different format to the Intel one for which I couldn't find a spec anywhere 🙃
 
 It looks like we need to use both the Microsoft and AMD UUIDs for the notifications (including the "Modern Standby" ones), though, and the order [might be important](https://github.com/torvalds/linux/commit/f198478cfdc8105a1c8d8945918904f0498d19be).
 We'll talk more about this later.
@@ -355,8 +352,6 @@ See this [PR](https://github.com/acpica/acpica/pull/993) I opened on the ACPICA 
 
 Switching between these states is done through the `acpi_pwr_switch_consumer` function on FreeBSD (a "power consumer" is just a device).
 
-[//]: # (TODO A graphic similar to the one I presented at BSDCan would make things much clearer. But actually nice cuz I wanna use in paper too.)
-
 To set a device's D-state, one must first get the power resources required for that D-state through the `_PRx` (where `x` is the target D-state) objects ([ACPI 7.3.8 - 7.3.11](https://uefi.org/htmlspecs/ACPI_Spec_6_4_html/07_Power_and_Performance_Mgmt/device-power-management-objects.html?highlight=_psc#pr0-power-resources-for-d0)) and ensure they are all turned on.
 Conversely, the power resources for all higher-power states (i.e. lower-numbered `x`) must be turned off.
 Finally, the `_PSx` object is evaluated to actually set the device to the desired D-state.
@@ -378,8 +373,6 @@ The first and simplest is through the `_PSC` (power state current, [ACPI 7.3.6](
 
 > This control method is not required if the device state can be inferred by the Power Resource settings. This would be the case when the device does not require a \_PS0, \_PS1, \_PS2, or \_PS3 control method.
 
-[//]: # (TODO Or maybe the graphic should be here?)
-
 The "Power Resource settings" the spec mentions are our friends the `_PRx` objects.
 From these, we can infer the D-state of a device is as follows:
 
@@ -398,8 +391,6 @@ We just need to call the display off and sleep entry DSM functions on the SPMC.
 This is done in [D48735](https://reviews.freebsd.org/D48735).
 
 ### Idling the CPU and the `_CST` object 💭
-
-[//]: # (TODO Still gotta figure out why the checks are being made to not enter C3 when suspending)
 
 For S0i3, it is important that all the CPUs are in their lowest C-state (CPU power state), which is usually C3.
 When entering s2idle, we're calling the machine-dependent `cpu_idle()` function to idle the CPU (as a reminder, both on the s2idle thread on the BSP and also on the APs through their idle threads).
@@ -438,13 +429,13 @@ On some platforms which might not have an easily-readable `_CST` object (e.g. is
 #### MWAIT entry method
 
 The entry method for C1 in the above example is `FFixedHW`, which means we'll go down the [`acpi_PkgFFH_IntelCpu() == 0`](https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n860) path.
-The bit offset (`0x02`) is interpreted as `class`, which in our case is `CST_FFH_INTEL_CL_MWAIT` (could also be `CST_FFH_INTEL_CL_C1IO` meaning "C1 I/O then `hlt`", but I'm going to go into that).
+The bit offset (`0x02`) is interpreted as `class`, which in our case is `CST_FFH_INTEL_CL_MWAIT` (could also be `CST_FFH_INTEL_CL_C1IO` meaning "C1 I/O then `hlt`", but I'm not going to go into that).
 
 This is telling us we need to use the x86 [MWAIT](https://www.felixcloutier.com/x86/mwait) instruction to enter the C1 state.
 MWAIT is an instruction usually used in conjunction with MONITOR to enter an "implementation-dependent optimized state" and wait until a specific memory range is written to.
 
 If CPUID ECX bit 1 is set however, and the programmer sets ECX bit 0 to 1 before executing MWAIT, it will treat interrupts such as SCIs as break events too, so it can be used even without MONITOR.
-And if ECX bit 0 in CPUID is set too, it can also be used for power management, where bits 7 to 4 EAX can be set to contain the C-state the processor should enter (we can ignore the lowest 4 bits which are for "sub C-states").
+And if ECX bit 0 in CPUID is set too, it can also be used for power management, where bits 7 to 4 of EAX can be set to contain the C-state the processor should enter (we can ignore the lowest 4 bits which are for "sub C-states").
 
 All in all, entering C1 on this machine would look like this:
 
