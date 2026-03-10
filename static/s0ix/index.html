@@ -212,7 +212,7 @@ For this, I have written a new <code>acpi_spmc</code> driver for FreeBSD in <a c
 <p>In ACPI-speak, a DSM (<code>_DSM</code> object) is a sort of special multiplexed method for executing, well, device-specific methods.
 When you evaluate a <code>_DSM</code> object, you pass it a vendor-specific UUID as its first argument, a revision as its second, a function index as its third, and, finally, an optional package (== a vector in ACPI-speak) of arguments as its fourth.
 On FreeBSD, <code>acpi_EvaluateDSMTyped</code> is used to do this for you.</p>
-<p>It seems like the original <a class="link" href="https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf" rel="noopener noreferrer">Intel spec</a> linked above is not actually used in practice (UUID <code>c4eb40a0-6cd2-11e2-bcfd-0800200c9a66</code>), at least not on modern Intel or AMD platforms.
+<p>AMD systems do not use the original <a class="link" href="https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf" rel="noopener noreferrer">Intel spec</a> linked above (UUID <code>c4eb40a0-6cd2-11e2-bcfd-0800200c9a66</code>).
 Instead, there's <a class="link" href="https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/modern-standby-firmware-notifications" rel="noopener noreferrer">Microsoft's</a> DSM UUID <code>11e00d56-ce64-47ce-837b-1f898f9aa461</code> which thankfully is quite similar to the original DSM's, except with a couple extra "Modern Standby" functions and missing some others:</p>
 <div class="table"><table><thead><tr><th>Index</th><th>Description</th><th><div style="min-width: 220px">Notes</div></th></tr></thead><tbody>
 <tr><td>0</td><td>Enumerate functions</td><td></td></tr>
@@ -226,7 +226,7 @@ Instead, there's <a class="link" href="https://learn.microsoft.com/en-us/windows
 <tr><td>8</td><td>"Modern Standby" exit notification</td><td></td></tr>
 </tbody></table>
 </div>
-<p>AMD have their own DSM UUID <code>e3f32452-febc-43ce-9039-932122d37721</code> along with Microsoft's one, for which I haven't really been able to find any documentation outside of the Linux implementation.
+<p>And AMD's own DSM UUID <code>e3f32452-febc-43ce-9039-932122d37721</code>, for which I haven't really been able to find any documentation outside of the Linux implementation.
 This is what they look like:</p>
 <div class="table"><table><thead><tr><th>Index</th><th>Description</th><th><div style="min-width: 280px">Notes</div></th></tr></thead><tbody>
 <tr><td>0</td><td>Enumerate functions</td><td></td></tr>
@@ -244,8 +244,8 @@ This is what they look like:</p>
 <span class="identifier">Arg3</span> <span class="glyph">=</span> <span class="identifier">Package</span>() <span class="comment">// No arguments needed.</span>
 <span class="identifier">call_dsm</span>(<span class="identifier">spmc_device</span>, <span class="identifier">Arg0</span>, <span class="identifier">Arg1</span>, <span class="identifier">Arg2</span>, <span class="identifier">Arg3</span>)
 </code></pre>
-<p>On AMD platforms, we must use the AMD UUID for getting device constraints, which makes sense as Microsoft's DSMs don't have this.
-For some reason, though, the device constraints package returned by the AMD UUID follows a different format for which I couldn't find a spec anywhere 🙃</p>
+<p>We must use the AMD UUID for getting device constraints, which makes sense as Microsoft's DSMs don't have this.
+For some reason, though, the device constraints package returned by the AMD UUID follows a different format to the Intel one for which I couldn't find a spec anywhere 🙃</p>
 <p>It looks like we need to use both the Microsoft and AMD UUIDs for the notifications (including the "Modern Standby" ones), though, and the order <a class="link" href="https://github.com/torvalds/linux/commit/f198478cfdc8105a1c8d8945918904f0498d19be" rel="noopener noreferrer">might be important</a>.
 We'll talk more about this later.</p>
 <p>I don't know what exactly the situation is like on modern Intel platforms.</p>
@@ -340,11 +340,11 @@ That object on an AMD laptop looks something like this (parsed in <a class="link
 <p>On some platforms which might not have an easily-readable <code>_CST</code> object (e.g. is a complex method instead), you can see what C-state methods are supported with the <code>dev.cpu.0.cx_method</code> sysctl, and more C-state info in the <code>dev.cpu.0</code> tree.</p>
 <h4>MWAIT entry method</h4>
 <p>The entry method for C1 in the above example is <code>FFixedHW</code>, which means we'll go down the <a class="link" href="https://cgit.freebsd.org/src/tree/sys/dev/acpica/acpi_cpu.c?id=f2155a6#n860" rel="noopener noreferrer"><code>acpi_PkgFFH_IntelCpu() == 0</code></a> path.
-The bit offset (<code>0x02</code>) is interpreted as <code>class</code>, which in our case is <code>CST_FFH_INTEL_CL_MWAIT</code> (could also be <code>CST_FFH_INTEL_CL_C1IO</code> meaning "C1 I/O then <code>hlt</code>", but I'm going to go into that).</p>
+The bit offset (<code>0x02</code>) is interpreted as <code>class</code>, which in our case is <code>CST_FFH_INTEL_CL_MWAIT</code> (could also be <code>CST_FFH_INTEL_CL_C1IO</code> meaning "C1 I/O then <code>hlt</code>", but I'm not going to go into that).</p>
 <p>This is telling us we need to use the x86 <a class="link" href="https://www.felixcloutier.com/x86/mwait" rel="noopener noreferrer">MWAIT</a> instruction to enter the C1 state.
 MWAIT is an instruction usually used in conjunction with MONITOR to enter an "implementation-dependent optimized state" and wait until a specific memory range is written to.</p>
 <p>If CPUID ECX bit 1 is set however, and the programmer sets ECX bit 0 to 1 before executing MWAIT, it will treat interrupts such as SCIs as break events too, so it can be used even without MONITOR.
-And if ECX bit 0 in CPUID is set too, it can also be used for power management, where bits 7 to 4 EAX can be set to contain the C-state the processor should enter (we can ignore the lowest 4 bits which are for "sub C-states").</p>
+And if ECX bit 0 in CPUID is set too, it can also be used for power management, where bits 7 to 4 of EAX can be set to contain the C-state the processor should enter (we can ignore the lowest 4 bits which are for "sub C-states").</p>
 <p>All in all, entering C1 on this machine would look like this:</p>
 <pre><code><span class="identifier">mov</span> <span class="identifier">eax</span>, <span class="literal">0x00000000</span> <span class="comment">; C1 hint (MWAIT_C1).</span>
 <span class="identifier">mov</span> <span class="identifier">ecx</span>, <span class="literal">1</span>          <span class="comment">; Break on interrupt, like hlt (MWAIT_INTRBREAK).</span>
