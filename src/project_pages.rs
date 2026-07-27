@@ -199,11 +199,11 @@ pub fn gdpr() -> Markup {
 			}
 			.socials {
 				(social("Source code", "https://github.com/novati0n/gdpr-presentation", include_static!("//icons/gh.svg")))
-				(social("Full version", "https://novation.dev/GDPR-presentation", include_static!("/icons/link.svg")))
+				(social("Full version", "https://gdpr.novation.dev", include_static!("/icons/link.svg")))
 			}
 		},
 		html! {
-			iframe title="The GDPR presentation in question" src="https://novation.dev/GDPR-presentation" loading="lazy" {}
+			iframe title="The GDPR presentation in question" src="https://gdpr.novation.dev" loading="lazy" {}
 		},
 	)
 }
